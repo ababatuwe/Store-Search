@@ -16,6 +16,7 @@
 		401A822B1DAFD34800B130B5 /* SearchResultCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 401A822A1DAFD34800B130B5 /* SearchResultCell.xib */; };
 		401A822D1DAFD74900B130B5 /* SearchResultCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401A822C1DAFD74900B130B5 /* SearchResultCell.swift */; };
 		401A822F1DAFDB0300B130B5 /* NothingFoundCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 401A822E1DAFDB0300B130B5 /* NothingFoundCell.xib */; };
+		401A82311DB2D44D00B130B5 /* LoadingCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 401A82301DB2D44C00B130B5 /* LoadingCell.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,7 @@
 		401A822A1DAFD34800B130B5 /* SearchResultCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SearchResultCell.xib; sourceTree = "<group>"; };
 		401A822C1DAFD74900B130B5 /* SearchResultCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SearchResultCell.swift; path = ../SearchResultCell.swift; sourceTree = "<group>"; };
 		401A822E1DAFDB0300B130B5 /* NothingFoundCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = NothingFoundCell.xib; sourceTree = "<group>"; };
+		401A82301DB2D44C00B130B5 /* LoadingCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = LoadingCell.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,6 +66,7 @@
 			children = (
 				401A82161DAEE02300B130B5 /* AppDelegate.swift */,
 				401A82181DAEE02300B130B5 /* SearchViewController.swift */,
+				401A82301DB2D44C00B130B5 /* LoadingCell.xib */,
 				401A82281DAEF22100B130B5 /* SearchResult.swift */,
 				401A822C1DAFD74900B130B5 /* SearchResultCell.swift */,
 				401A821A1DAEE02300B130B5 /* Main.storyboard */,
@@ -138,6 +141,7 @@
 			files = (
 				401A82211DAEE02300B130B5 /* LaunchScreen.storyboard in Resources */,
 				401A821E1DAEE02300B130B5 /* Assets.xcassets in Resources */,
+				401A82311DB2D44D00B130B5 /* LoadingCell.xib in Resources */,
 				401A822B1DAFD34800B130B5 /* SearchResultCell.xib in Resources */,
 				401A822F1DAFDB0300B130B5 /* NothingFoundCell.xib in Resources */,
 				401A821C1DAEE02300B130B5 /* Main.storyboard in Resources */,

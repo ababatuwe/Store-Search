@@ -11,7 +11,6 @@
 		401A82191DAEE02300B130B5 /* SearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401A82181DAEE02300B130B5 /* SearchViewController.swift */; };
 		401A821C1DAEE02300B130B5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 401A821A1DAEE02300B130B5 /* Main.storyboard */; };
 		401A821E1DAEE02300B130B5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 401A821D1DAEE02300B130B5 /* Assets.xcassets */; };
-		401A82211DAEE02300B130B5 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 401A821F1DAEE02300B130B5 /* LaunchScreen.storyboard */; };
 		401A82291DAEF22100B130B5 /* SearchResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401A82281DAEF22100B130B5 /* SearchResult.swift */; };
 		401A822B1DAFD34800B130B5 /* SearchResultCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 401A822A1DAFD34800B130B5 /* SearchResultCell.xib */; };
 		401A822D1DAFD74900B130B5 /* SearchResultCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401A822C1DAFD74900B130B5 /* SearchResultCell.swift */; };
@@ -25,7 +24,6 @@
 		401A82181DAEE02300B130B5 /* SearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewController.swift; sourceTree = "<group>"; };
 		401A821B1DAEE02300B130B5 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		401A821D1DAEE02300B130B5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		401A82201DAEE02300B130B5 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		401A82221DAEE02300B130B5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		401A82281DAEF22100B130B5 /* SearchResult.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchResult.swift; sourceTree = "<group>"; };
 		401A822A1DAFD34800B130B5 /* SearchResultCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SearchResultCell.xib; sourceTree = "<group>"; };
@@ -73,7 +71,6 @@
 				401A821D1DAEE02300B130B5 /* Assets.xcassets */,
 				401A822A1DAFD34800B130B5 /* SearchResultCell.xib */,
 				401A822E1DAFDB0300B130B5 /* NothingFoundCell.xib */,
-				401A821F1DAEE02300B130B5 /* LaunchScreen.storyboard */,
 				401A82221DAEE02300B130B5 /* Info.plist */,
 			);
 			path = "Store Search";
@@ -139,7 +136,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				401A82211DAEE02300B130B5 /* LaunchScreen.storyboard in Resources */,
 				401A821E1DAEE02300B130B5 /* Assets.xcassets in Resources */,
 				401A82311DB2D44D00B130B5 /* LoadingCell.xib in Resources */,
 				401A822B1DAFD34800B130B5 /* SearchResultCell.xib in Resources */,
@@ -171,14 +167,6 @@
 				401A821B1DAEE02300B130B5 /* Base */,
 			);
 			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-		401A821F1DAEE02300B130B5 /* LaunchScreen.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				401A82201DAEE02300B130B5 /* Base */,
-			);
-			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */

@@ -56,35 +56,16 @@ class SearchViewController: UIViewController {
     }
     
     /*
-    * String(contentsOf:, enconding:) returns a new string object with the data it receives from the server
-    * at the other end of the URL.
-    *
-    * Because things can go wrong, for example, the network may be down and the server cannot be reached -
-    * you're putting this in a do-try-catch block. If there is a problem, the code jumps to the catch section
-    * and the error variable contains more details about the error.
-    *
-    * return nil to signal that the request failed
-    */
-    func performStoreRequest(with url: URL) -> String? {
-        do {
-            return try String(contentsOf: url, encoding: .utf8)
-        } catch {
-            print("Download Error: \(error)")
-            return nil
-        }
-    }
-    
-    /*
      * keys will always be strings
      * values can be anything String, number or boolean that's why the type of values is "Any"
      * 
      * The chance is small but it's possible that this conversion of string to Data fails - for example, if the text from the string cannot be represented in the encoding you've chosen. That's why you're using a guard statmenet. guard let works like if let, it unwraps the optionals for you. but if unwrapping fails, i.e. if json.data(...) returns nil, the guard's else block is executed and you return nil to indicate that parse(json) failed. This "should" never happen in our app, but it's good to be vigilant about this kind of thing. (Never say never!)
      
      * If everything went OK - and 99.999% of the time it will! - you convert the Data object into a Dictionary using JSONSerialization.jsonObject(...). Or atleast, you hope you can convert it into a dictionary...
+     
+     * Removed the guard statemenet and changed the parameter from String to Data. Previously this method took a String object and converted it into a Data object that it passed to JSONSerialization.jsonObject(...). Now you already have the JSON text in a Data object, so you no longer have to bother with the string.
      */
-    func parse(json: String) -> [String: Any]? {
-        guard let data = json.data(using: .utf8, allowLossyConversion: false) else { return nil }
-        
+    func parse(json data: Data) -> [String: Any]? {
         do {
             return try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
         } catch {
@@ -265,15 +246,33 @@ class SearchViewController: UIViewController {
 
 extension SearchViewController: UISearchBarDelegate {
     
+
     /*
-     * 1. This gets a reference to the queue. We're using a "global" queue
-     * which is a queue provided by the system. You can also create custom 
-     * queues, but using a standard queue is fine for this app
+     * 1. Create the URL object with the search text like before
      *
-     * 2. Once you have the queue, you can dispatch a closure on it. The closure is everything between the { and } symbols. This code will be put on the queue and executed asynchronously in the background. After scheduling this closure, the main thread is immediately free to continue. It is no longer blocked
-     * 3. With DispatchQueue.main.async you can schedule a new closure on the main quque. This new closure sets isLoading back to false and reloads the tableView. UIKit has a rule that UI code should always be performed on the main thread. This is important! Accessing the same data from multiple threads can create all sorts of misery, so the designers of UIKit decided that changing the UI from other threads would not be allowed. That means you cannot reload the table view from within this closure, because it runs on a queue that is backed by a thread other than the main thread. If you need to do anything on the main thread from a background queue, you can simply create a new closure and schedule that on the main queue using DispatchQueue.main.async.
+     * 2. Obtain the URLSession object. This grabs the standard "shared" session, which uses a default configuration with respect to
+     *    caching, cookies, and other web stuff.
+     *    If you want to use a different config - eg. to restrict networking to when Wi-Fi is available but not when there is only
+     *    cellular access - then you have to creat your own URLSessionConfiguration and URLSession objects. But for this app the
+     *    default one will be fine
+     *
+     * 3. Create the data task. Data tasks are for sending HTTPS GET requests to the server at url. the code from the completion
+     *    handler will be invoked when the data task has received the reply from the server.
+     *
+     * 4. Inside the closure you're given three parameters: data, response and error. These are all optionals so they can be nil and
+     *    have to be unwrapped before you can use them. If there was a problem, error contains an Error object describing what went 
+     *    wrong. This happens when the server cannot be reached or the network is down or some other hardware failure. If error is 
+     *    nil, the communication with the server succeeded; response holds the server's response code and headers, and data contains 
+     *    the actual thing that was sent from the server, in this case a blob of JSON. For now you simply use a print() to show *
+     *    success or failure.
+     *
+     *    Success:
+     *    Unwrap the optional object from the data parameter and give it to parse(json) to convert it into a dictionary. Call parse(jsonDictionary) to convert the dictionary contents into SearchResult objects. Finally, sort the results and put everything into the table view. The completion handler won't be performed on the main thread. Because URLSession does all the networking asynchronously, it will also call the completion handler on a background thread. Parsing the JSON and sorting the list of search results could potentially take a while(long enough to be noticeable). You don't want to block the main thread while that is happening, so it;s preferable that this happens in the background too.When the time comes to update the UI, you need to switch back to the main thread. Those are the rules. That's why you wrap the reloading of the table view into DispatchQueue.main.async on the main queue. If you forget ot do this, your app may still appear to work. That's the insidious thing about working with multiple threads. However, it may also crash in all kinds of mysterious ways. So remember, UI stuff should always happen on the main thread.
+     *
+     * 5. Finally, once you have created the data task, call resume() to start it. This sends the request to the server. That all
+     *    happens on a background thread, so the app is immediately free to continue (URLSession is as async as they come)
+     *
      */
-    
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         if !searchBar.text!.isEmpty {
             searchBar.resignFirstResponder()
@@ -283,29 +282,40 @@ extension SearchViewController: UISearchBarDelegate {
             
             hasSearched = true
             searchResults = []
+            
             //1
-            let queue = DispatchQueue.global()
-            //2.
-            queue.async {
-                let url = self.iTunesURL(searchText: searchBar.text!)
-                
-                if let jsonString = self.performStoreRequest(with: url) {
-                    if let jsonDictionary = self.parse(json: jsonString) {
-                        
+            let url = iTunesURL(searchText: searchBar.text!)
+            //2
+            let session = URLSession.shared
+            //3
+            let dataTask = session.dataTask(with: url, completionHandler: {
+                data, response, error in
+                //4
+                if let error = error {
+                    print("Failure! \(error)")
+                } else if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                    if let data = data, let jsonDictionary = self.parse(json: data) {
                         self.searchResults = self.parse(jsonDictionary: jsonDictionary)
                         self.searchResults.sort(by: <)
-                        //3.
+                        
                         DispatchQueue.main.async {
                             self.isLoading = false
                             self.tableView.reloadData()
                         }
                         return
                     }
-                    DispatchQueue.main.async {
-                        self.showNetworkError()
-                    }
+                } else {
+                    print("Failure! \(response)")
                 }
-            }
+                DispatchQueue.main.async {
+                    self.hasSearched = false
+                    self.isLoading = false
+                    self.tableView.reloadData()
+                    self.showNetworkError()
+                }
+            })
+            //5
+            dataTask.resume()
         }
     }
     

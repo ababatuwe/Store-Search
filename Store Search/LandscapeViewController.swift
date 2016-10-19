@@ -16,6 +16,7 @@ class LandscapeViewController: UIViewController {
     @IBOutlet weak var pageControl: UIPageControl!
     
     private var firstTime = true
+    private var downloadTasks = [URLSessionDownloadTask]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -41,6 +42,9 @@ class LandscapeViewController: UIViewController {
     
     deinit {
         print("deinit \(self)")
+        for task in downloadTasks {
+            task.cancel()
+        }
     }
     
     /*
@@ -129,8 +133,7 @@ class LandscapeViewController: UIViewController {
             
             //1. Create the button
             let button = UIButton(type: .system)
-            button.backgroundColor = UIColor.white
-            button.setTitle("\(index)", for: .normal)
+            downloadImage(for: searchResult, andPlaceOn: button)
             
             //2 Set the button's frame
             button.frame = CGRect(x: x + paddingHorz,
@@ -171,12 +174,36 @@ class LandscapeViewController: UIViewController {
      pageChanged(_ sender: UIPageControl) lets us know when the user taps on the Page Control so we can update the scroll view.
      */
     @IBAction func pageChanged(_ sender: UIPageControl) {
-        UIView.animate(withDuration: 0.3, delay: 0, options: [.curveEaseInOut], animations: { 
+        UIView.animate(withDuration: 0.3, delay: 0, options: [.curveEaseInOut], animations: {
             self.scrollView.contentOffset = CGPoint(
                 x: self.scrollView.bounds.size.width * CGFloat(sender.currentPage), y: 0)
             }, completion: nil)
         
         
+    }
+    
+    /*
+     downloadImage(for searchResult: , andPlaceOn button: ) downloads an image and places it on a button
+     
+     */
+    
+    private func downloadImage(for searchResult: SearchResult, andPlaceOn button: UIButton) {
+        
+        if let url = URL(string: searchResult.artworkSmallURL) {
+            let downloadTask = URLSession.shared.downloadTask(with: url) {
+                [weak button] url, response, error in
+                if error == nil, let url = url, let data = try? Data(contentsOf: url), let image = UIImage(data: data) {
+                    DispatchQueue.main.async {
+                        if let button = button {
+                            button.setImage(image, for: .normal)
+                            print("Button image set successfully")
+                        }
+                    }
+                }
+            }
+            downloadTask.resume()
+            downloadTasks.append(downloadTask)
+        }
     }
 }
 

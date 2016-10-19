@@ -15,6 +15,8 @@ class SearchViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var segmentControl: UISegmentedControl!
     
+    var landscapeViewController: LandscapeViewController?
+    
     @IBAction func segmentChanged(_ sender: UISegmentedControl) {
         performSearch()
     }
@@ -326,6 +328,148 @@ class SearchViewController: UIViewController {
             detailViewController.searchResult = searchResult
         }
     }
+    
+    /*
+     willTransition is invoked when the device is flipped over. You can override this method to show (and hide) the new
+     LandscapeViewController.
+     
+     This method isn't just invoked on device rotations but any time the trait collection for the view controller changes. So what is a trait collection? It is a collection of traits where a trait can be:
+     - the horizontal size class
+     - the vertical size class
+     - the display scale (is this Retina screen or not?)
+     - the user interface idiom (is this an iPhone or iPad?)
+     - the preferred Dynamic Type font size
+     - and a few other things
+     
+     Whenever one or more of these traits change, for whatever reason, UIKit calls willTransition(to:with:) to give the view controller a chance to adapt to the new traits.
+     
+     SIZE CLASSES:
+     
+     This feature allows you to design a UI that is independent of the device's actual dimensions or orientation. With size classes, you can create a single storyboard that works across all devices, from iPhone to iPad - a so called "universal storyboard".
+     
+     There's two size classes: Horizontal and vertical, and each can have two values: compact or regular. The combination of these four things creates the following possibilities
+     
+     
+     horizontal
+     ------------------------------------>
+     |                   Compact            Regular
+     |               +---------------+---------------+
+     |               |               |               |
+     |               |   iPhone      |    iPhone     |
+     |   Compact     |  Landscape    |      6+       |
+     |               |  (except 6+)  |   Landscape   |
+     vertical  |               |               |               |
+     |               |               |               |
+     |               +---------------+---------------+
+     |               |               |               |
+     |               |    iPhone     |    iPad       |
+     |   Regular     |   portrait    |   Portait     |
+     |               |               |  Landscape    |
+     |               |               |               |
+     |               |               |               |
+     V               +---------------+---------------+
+     
+     iPhone in portrait:
+     Horizontal size class: compact
+     Vertical size class: regular
+     
+     when iPhone is rotated to landscape:
+     Horizontal size class: compact
+     Vertical size class: compact
+     
+     The horizontal size class doesn't change and stays compact in both portrait and landscape orientations - except on the iPhone 6s Plus and 7 Plus, that is.
+     
+     What this boils down to is that to detect an iPhone rotation, you just have to look at how the vertical size class changed.
+     That's exactly what the switch statement does.
+     
+     */
+    override func willTransition(to newCollection: UITraitCollection, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.willTransition(to: newCollection, with: coordinator)
+        
+        switch newCollection.verticalSizeClass {
+        case .compact:
+            showLandscape(with: coordinator)
+        case .regular, .unspecified:
+            hideLandscape(with: coordinator)
+            
+        }
+    }
+    
+    /*
+     Previously, we used present(animated, completion) or make a segue to show the new modal screen. Here, however, you add the new LandscapeViewController as a child view controller of SearchViewController.
+     
+     1. It should never happen that the app instantiates a second landscape view when you're already looking at one. The guard that landscapeViewController is still nil codified this requirement. If it should happen that this condition doesn't hold - we're already showing the landscape view - then we simply return right away.
+     
+     2. Find the scene with the ID "LandscapeViewController" in the storyboard and instantiate it. Because you don't have a segue you need to do this manually. This is why you filled in that Storyboard ID field in the Identity inspector. The landscapeViewController instance variable is an optional so you need to unwrap it before you can continue.
+     
+     3. Set the size and position of this new view controller. This makes the landscape view just as big as the SearchViewController, covering the entire screen. The frame is the rectangle that descibes the view's position and size you usually set its frame. The bounds is also a rectangle but seen from the inside of the view. Because SearchViewController's view is the superview here, the frame of the landscape view must be made equal to the SearchViewController's bounds.
+     
+     4. These are the minimum required steps to add the contents of one view controller to another, in this order:
+        - 1st, add the landscape controller's view as a subview. This places it on top of the table view, search bar and segmented 
+          control.
+        - Then tell the SearchVC that the LandscapeVC is now managing that part of the screen, using addChildViewController(). If 
+          you forget this step then the new view controller may not always work correctly.
+        - Tell the new view controller that it now has a parent view controller with didMove(toParentViewController).
+     
+     In this new arrangement, SearchViewController is the "parent" view controller, and LandscapeViewController is the "child". In 
+     other words, the Landscape screen is embedded inside the SearchViewController.
+     */
+    
+    func showLandscape(with coordinator: UIViewControllerTransitionCoordinator) {
+        //1
+        guard landscapeViewController == nil else { return }
+        //2
+        landscapeViewController = storyboard?.instantiateViewController(withIdentifier: "LandscapeViewController") as? LandscapeViewController
+        
+        if let controller = landscapeViewController {
+            controller.searchResults = searchResults // Handover the searchResults to landscapeViewController upon rotation to landscape
+            //3
+            controller.view.frame = view.bounds
+            controller.view.alpha = 0
+            //4
+            view.addSubview(controller.view)
+            addChildViewController(controller)
+            
+            coordinator.animate(alongsideTransition: { _ in
+                
+                controller.view.alpha = 1
+                
+                //Make keyboard disappear
+                self.searchBar.resignFirstResponder()
+                
+                if self.presentedViewController != nil {
+                    self.dismiss(animated: true, completion: nil)
+                }
+                }, completion: { _ in
+                    controller.didMove(toParentViewController: self)
+            })
+        }
+    }
+    
+    /*
+        First call willMove(toParentViewController: nil) to tell the new view controller that it is leaving the view controller
+        hierarchy (it no longer has a parent), then you remove its view from the screen, and finally 
+        removeFromParentViewController() truly disposes of the view controller.
+     
+        You also set the instance variable to nil in order to remove the last strong reference to the LandscapeViewController object
+        now that you're done with it.
+     */
+    
+    func hideLandscape(with coordinator: UIViewControllerTransitionCoordinator) {
+        if let controller = landscapeViewController {
+            controller.willMove(toParentViewController: nil)
+            
+            coordinator.animate(alongsideTransition: { _ in
+                controller.view.alpha = 0
+                }, completion: { _ in
+                    controller.view.removeFromSuperview()
+                    controller.removeFromParentViewController()
+                    self.landscapeViewController = nil
+            })
+        }
+    }
+    
+    
 }
 
 extension SearchViewController: UISearchBarDelegate {
